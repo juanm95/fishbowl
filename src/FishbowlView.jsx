@@ -60,11 +60,26 @@ function FishbowlPlay({controller, fishbowlState, setFishbowlState}) {
     });
 
     useEffect(() => {
+        let shouldTick = true;
+        const visibilityChangeListener = () => {
+            if (document.hidden) {
+                shouldTick = false;
+            } else {
+                shouldTick = true;
+            }
+          };
+        
+        document.addEventListener("visibilitychange", visibilityChangeListener);
         const interval = setInterval(() => {
+            if (!shouldTick) return;
+
             controller.current.tick();
             setFishbowlState({...controller.current});
         }, 1000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", visibilityChangeListener);
+        };
     });
 
     return (
@@ -146,10 +161,10 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
     const inputRef = useRef(null);
     const [inputHasText, setInputHasText] = useState(false);
     const readyRef = useRef(null);
+    const readyButtonDisabled = fishbowlState.cards.length !== fishbowlState.totalCards;
     const clearInput = useCallback(() => {
         inputRef.current.value = "";
         setInputHasText(false);
-        inputRef.current.focus();
     });
 
     const onAddCard = useCallback(() => {
@@ -159,8 +174,8 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
         });
         setFishbowlState({...controller.current});
         clearInput();
-        if (fishbowlState.cards.length === fishbowlState.totalCards) {
-            readyRef.current.focus();
+        if (fishbowlState.cards.length < fishbowlState.totalCards) {
+            inputRef.current.focus();
         }
     });
 
@@ -173,6 +188,8 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
             setFishbowlState({...controller.current});
         }
         clearInput();
+        inputRef.current.focus();
+
     });
 
     const onRemoveLastCard = useCallback(() => {
@@ -197,12 +214,14 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
 
     return (
         <div className={styles.addCardStage}>
-            <p>{`Add ${fishbowlState.totalCards - fishbowlState.cards.length} more cards`}</p>
-            <textarea autoFocus={true} rows={3} maxlength={80} onChange={checkIfInputHasText} ref={inputRef} type="textarea" placeholder="Card Text"></textarea>
-            <button disabled={!inputHasText || fishbowlState.cards.length === fishbowlState.totalCards} onClick={onAddCard}>Add Card</button>
+            <div>{`Add ${fishbowlState.totalCards - fishbowlState.cards.length} more cards`}</div>
+            <textarea rows={3} maxLength={80} onChange={checkIfInputHasText} ref={inputRef} type="textarea" placeholder="Card Text"></textarea>
+            {readyButtonDisabled ? 
+                <button disabled={!inputHasText || fishbowlState.cards.length === fishbowlState.totalCards} onClick={onAddCard}>Add Card</button> :
+                <button ref={readyRef} autoFocus={true} onClick={onReady}>Ready</button>
+            }
             <button disabled={!inputHasText} onClick={onRemoveCard}>Remove Card by Name</button>
             <button disabled={fishbowlState.cards.length === 0} onClick={onRemoveLastCard}>Remove Last Card</button>
-            <button ref={readyRef} disabled={fishbowlState.cards.length !== fishbowlState.totalCards} onClick={onReady}>Ready</button>
         </div>
     );
 }
@@ -235,11 +254,11 @@ function FishbowlSetup({controller, fishbowlState, setFishbowlState}) {
             </div>
             <div className={styles.input}>
                 <label>Total Cards</label>
-                <input required pattern="[0-9]+" type="text" ref={totalCardsRef}></input>
+                <input required type="number" min={2} ref={totalCardsRef}></input>
             </div>
             <div className={styles.input}>
                 <label>Seconds Per Turn</label>
-                <input required pattern="[0-9]+" type="text" ref={timePerTurnRef}></input>
+                <input required type="number" min={2} ref={timePerTurnRef}></input>
             </div>
             <button>Ready</button>
     </form>
