@@ -1,13 +1,13 @@
 import { FishbowlController, Stages } from "./FishbowlController"
 import { useState, useCallback, useRef, useEffect } from "react";
+import styles from "./FishbowlView.module.css";
+
 function FishbowlDone({controller, fishbowlState, setFishbowlState}) {
     const sortedTeams = [...fishbowlState.teams].sort((a, b) => {
         return b.points - a.points;
     });
     const winningTeam = sortedTeams[0];
     const winningTeamName = winningTeam.name;
-    const winningTeamPoints = winningTeam.points;
-    const losingTeams = sortedTeams.slice(1, 3);
     const onChangeCards = useCallback(() => {
         controller.current.changeCards();
         setFishbowlState({...controller.current});
@@ -19,15 +19,14 @@ function FishbowlDone({controller, fishbowlState, setFishbowlState}) {
     });
 
     return (
-        <div>
+        <div className={styles.readyStage}>
             <div>
                 <div>{winningTeamName} Won!</div>
-                <div>{winningTeamPoints} Points</div>
             </div>
-            <div>
-                {losingTeams.map((team) => {
+            <div className={styles.teamList}>
+                {sortedTeams.map((team) => {
                     return (
-                        <div>
+                        <div className={styles.teamListItem}>
                             <span>{team.name}</span>
                             <span> {team.points}pts</span>
                         </div>
@@ -69,8 +68,8 @@ function FishbowlPlay({controller, fishbowlState, setFishbowlState}) {
     });
 
     return (
-        <div>
-            <div>
+        <div className={styles.playStage}>
+            <div className={styles.roundStats}>
                 <div>{currentTeamName}</div>
                 <div>
                     <div>Cards Left</div>
@@ -81,10 +80,16 @@ function FishbowlPlay({controller, fishbowlState, setFishbowlState}) {
                     <div>{timeLeft}</div>
                 </div>
             </div>
-            <span>{currentCardName}</span>
-            <button onClick={onGotIt}>Got It</button>
-            <button onClick={onPass}>Pass</button>
-            <button onClick={onUndo}>Undo</button>
+            <div className={styles.card}>{currentCardName}</div>
+            <div className={styles.actions}>
+                <div className={styles.undoSection}>
+                    <button disabled={fishbowlState.roundInfo.lastAction == null} onClick={onUndo}>Undo</button>
+                </div>
+                <div className={styles.mainButtonSection}>
+                    <button className={styles.gotIt} onClick={onGotIt}>Got It</button>
+                    <button className={styles.pass} onClick={onPass}>Pass</button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -94,21 +99,31 @@ function FishbowlReady({controller, fishbowlState, setFishbowlState}) {
     let sortedTeams = [...controller.current.teams].sort((a, b) => {
         return b.points - a.points;
     });
+    const [startButtonDisabled, setStartButtonDisabled] = useState(true);
 
     function onStartClick() {
         controller.current.startPlaying();
         setFishbowlState({...controller.current});
     }
 
+    // Delay the start of the game by 1 seconds, to prevent accidental clicks
+    useEffect(() => {
+        const interval = setTimeout(() => {
+            setStartButtonDisabled(false);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
     return (
-        <div>
-            <p>Ready?</p>
-            <div>
+        <div className={styles.readyStage}>
+            Ready?
+            <div className={styles.teamList}>
             {sortedTeams.map((team) => {
-                return (<div>
-                    <span>{team.name}</span>
-                    <span> {team.points}pts</span>
-                </div>);
+                return (
+                    <div className={styles.teamListItem}>
+                        <span>{team.name}</span>
+                        <span> {team.points}pts</span>
+                    </div>);
             })}
             </div>
             <div>
@@ -122,7 +137,7 @@ function FishbowlReady({controller, fishbowlState, setFishbowlState}) {
                     {`${fishbowlState.roundInfo.cardsLeft} cards left`}
                 </div>
             </div>
-            <button onClick={onStartClick}>{buttonText}</button>
+            <button disabled={startButtonDisabled} onClick={onStartClick}>{buttonText}</button>
         </div>
     );
 }
@@ -130,10 +145,11 @@ function FishbowlReady({controller, fishbowlState, setFishbowlState}) {
 function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
     const inputRef = useRef(null);
     const [inputHasText, setInputHasText] = useState(false);
-
+    const readyRef = useRef(null);
     const clearInput = useCallback(() => {
         inputRef.current.value = "";
         setInputHasText(false);
+        inputRef.current.focus();
     });
 
     const onAddCard = useCallback(() => {
@@ -143,6 +159,9 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
         });
         setFishbowlState({...controller.current});
         clearInput();
+        if (fishbowlState.cards.length === fishbowlState.totalCards) {
+            readyRef.current.focus();
+        }
     });
 
     const onRemoveCard = useCallback(() => {
@@ -177,13 +196,13 @@ function FishbowlAddCards({controller, fishbowlState, setFishbowlState}) {
     }
 
     return (
-        <div>
+        <div className={styles.addCardStage}>
             <p>{`Add ${fishbowlState.totalCards - fishbowlState.cards.length} more cards`}</p>
-            <input onChange={checkIfInputHasText} ref={inputRef} type="text" placeholder="Card Text"></input>
+            <textarea autoFocus={true} rows={3} maxlength={80} onChange={checkIfInputHasText} ref={inputRef} type="textarea" placeholder="Card Text"></textarea>
             <button disabled={!inputHasText || fishbowlState.cards.length === fishbowlState.totalCards} onClick={onAddCard}>Add Card</button>
             <button disabled={!inputHasText} onClick={onRemoveCard}>Remove Card by Name</button>
             <button disabled={fishbowlState.cards.length === 0} onClick={onRemoveLastCard}>Remove Last Card</button>
-            <button disabled={fishbowlState.cards.length !== fishbowlState.totalCards} onClick={onReady}>Ready</button>
+            <button ref={readyRef} disabled={fishbowlState.cards.length !== fishbowlState.totalCards} onClick={onReady}>Ready</button>
         </div>
     );
 }
@@ -209,23 +228,21 @@ function FishbowlSetup({controller, fishbowlState, setFishbowlState}) {
 
 
     return (
-        <div>
-            <form onSubmit={onSubmit}>
-            <div>
-                <div>Team Count</div>
+        <form onSubmit={onSubmit} className={styles.inputList}>
+            <div className={styles.input}>
+                <label>Team Count</label>
                 <input required type="number" min={2} max={20} ref={teamCountRef}></input>
             </div>
-            <div>
-                <div>Total Cards</div>
+            <div className={styles.input}>
+                <label>Total Cards</label>
                 <input required pattern="[0-9]+" type="text" ref={totalCardsRef}></input>
             </div>
-            <div>
-                <div>Time Per Turn</div>
+            <div className={styles.input}>
+                <label>Seconds Per Turn</label>
                 <input required pattern="[0-9]+" type="text" ref={timePerTurnRef}></input>
             </div>
-            <button>Submit</button>
-            </form>
-        </div>
+            <button>Ready</button>
+    </form>
     );
 }
 
@@ -263,11 +280,11 @@ export function Fishbowl() {
     });
 
     return (
-        <div>
-        <div>
-            <button onClick={onForceReset}>Force Reset</button> Juan's Fishbowl   
-        </div>
-        <FishbowlStage controller={controller} fishbowlState={fishbowlState} setFishbowlState={setFishbowlState}></FishbowlStage>
+        <div className={styles.app}>
+            <div className={styles.header}>
+                <button onClick={onForceReset}>Force Reset</button> <span>Juan's Fishbowl</span>   
+            </div>
+            <FishbowlStage controller={controller} fishbowlState={fishbowlState} setFishbowlState={setFishbowlState}></FishbowlStage>
         </div>
     )
 }

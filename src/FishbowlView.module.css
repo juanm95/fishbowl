@@ -1,0 +1,194 @@
+body {
+    user-select: none;
+    background-color:  #ffe5cc;
+    color: #353535;
+    --accent-blue: rgb(150, 197, 213);
+    font-family: "Kalam", sans-serif;
+}
+
+.app {
+    font-size: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent-blue);
+    width: 100%;
+    justify-content: space-between;
+    color: white;
+    font-size: 24px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.header * {
+    margin: 10px;
+}
+
+.header button {
+    font-size: 12px;
+}
+
+button {
+    font-size: 24px;
+    border-radius: 5px;
+    border: 1px solid black;
+    font-family: "Kalam", sans-serif;
+}
+
+button:disabled {
+    border: 1px solid gray;
+}
+
+input, textarea {
+    height: 30px;
+    border-radius: 5px;
+    border: 2px solid var(--accent-blue);
+    box-sizing: border-box;
+    background-color: whitesmoke;
+    text-align: center;
+    font-size: 24px;
+    font-family: "Kalam", sans-serif;
+}
+
+.inputList {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.input {
+    display: flex;
+    justify-content: space-between;
+}
+
+.input input {
+    width: 100px;
+}
+
+.addCardStage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+}
+
+.addCardStage textarea {
+    height: 120px;
+    display: block;
+    width: 90%;
+    resize: none;
+    display: flex;
+    align-items: center;
+}
+
+.addCardStage button {
+    width: 90%;
+}
+
+.readyStage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+    width: 100%;
+}
+
+.readyStage div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.readyStage .teamList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+}
+
+.teamList .teamListItem {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.playStage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+    width: 100%;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: white;
+    width: 90%;
+}
+
+.roundStats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 90%;
+}
+
+.roundStats div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.actions {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    width: 90%;
+    justify-content: stretch;
+}
+
+.gotIt {
+    background-color: rgb(225, 255, 179);
+}
+
+.pass {
+    background-color: rgb(255, 200, 200);
+}
+
+.undoSection {
+    flex-grow: 1;
+}
+
+.undoSection button {
+    width: 100%;
+    height: 100%;
+}
+
+.mainButtonSection {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    flex-grow: 3;
+}
+
+.mainButtonSection button {
+    height: 80px;
+}

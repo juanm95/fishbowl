@@ -24,7 +24,6 @@ export class FishbowlController {
         this.cards = [];
         this.timePerTurn = null;
         this.roundInfo = null;
-        this.lastAction = null;
         this.totalRounds = 3;
     }
 
@@ -102,6 +101,7 @@ export class FishbowlController {
         this.roundInfo.time = this.timePerTurn;
         this.roundInfo.currentTeam = (this.roundInfo.currentTeam + 1) % this.teams.length;
         this.roundInfo.cards = this.getCardOrder();
+        this.roundInfo.lastAction = null;
         this.setNextCardIndex();
     }
 
@@ -137,9 +137,9 @@ export class FishbowlController {
         this.roundInfo.cardsLeft--;
         this.roundInfo.completedCards[this.roundInfo.cards[this.roundInfo.cardIndex]] = true;
         this.teams[this.roundInfo.currentTeam].points++;
-        this.lastAction = {
+        this.roundInfo.lastAction = {
             type: "gotIt",
-            index: this.cardIndex
+            cardIndex: this.roundInfo.cardIndex
         }
         if (this.roundInfo.cardsLeft === 0) {
             this.finishRound();
@@ -149,20 +149,21 @@ export class FishbowlController {
     }
 
     pass() {
-        this.lastAction = {
+        this.roundInfo.lastAction = {
             type: "pass",
-            index: this.cardIndex
+            cardIndex: this.roundInfo.cardIndex
         }
         this.setNextCardIndex();
     }
 
     undo() {
-        this.roundInfo.cardIndex = this.lastAction.cardIndex;
-        if (this.lastAction.type === "gotIt") {
+        this.roundInfo.cardIndex = this.roundInfo.lastAction.cardIndex;
+        if (this.roundInfo.lastAction.type === "gotIt") {
             this.roundInfo.cardsLeft++;
             this.roundInfo.completedCards[this.roundInfo.cards[this.roundInfo.cardIndex]] = false;
+            this.teams[this.roundInfo.currentTeam].points--;
         }
-        this.lastAction = null;
+        this.roundInfo.lastAction = null;
     }
 
     changeCards() {
