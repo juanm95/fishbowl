@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/fishbowl/static/css/main.610f2ca2.css",
+    "main.js": "/fishbowl/static/js/main.731e8d62.js",
+    "static/js/453.3a2ab55d.chunk.js": "/fishbowl/static/js/453.3a2ab55d.chunk.js",
+    "index.html": "/fishbowl/index.html",
+    "main.610f2ca2.css.map": "/fishbowl/static/css/main.610f2ca2.css.map",
+    "main.731e8d62.js.map": "/fishbowl/static/js/main.731e8d62.js.map",
+    "453.3a2ab55d.chunk.js.map": "/fishbowl/static/js/453.3a2ab55d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.610f2ca2.css",
+    "static/js/main.731e8d62.js"
+  ]
+}
