@@ -135,7 +135,7 @@ function FishbowlReady({controller, fishbowlState, setFishbowlState}) {
             <div className={styles.teamList}>
             {sortedTeams.map((team) => {
                 return (
-                    <div className={styles.teamListItem}>
+                    <div key={team.name} className={styles.teamListItem}>
                         <span>{team.name}</span>
                         <span> {team.points}pts</span>
                     </div>);
@@ -234,13 +234,15 @@ function FishbowlSetup({controller, fishbowlState, setFishbowlState}) {
     const teamCountRef = useRef(null);
     const totalCardsRef = useRef(null);
     const timePerTurnRef = useRef(null);
+    const switchTeamsAfterRoundRef = useRef(null);
 
     function onSubmit(event) {
         event.preventDefault();
         controller.current.setRules({
             teamCount: stringToInt(teamCountRef.current.value),
             totalCards: stringToInt(totalCardsRef.current.value),
-            timePerTurn: stringToInt(timePerTurnRef.current.value)
+            timePerTurn: stringToInt(timePerTurnRef.current.value),
+            switchTeamsAfterRound: switchTeamsAfterRoundRef.current.checked
         });
         setFishbowlState({...controller.current});
     }
@@ -259,6 +261,14 @@ function FishbowlSetup({controller, fishbowlState, setFishbowlState}) {
             <div className={styles.input}>
                 <label>Seconds Per Turn</label>
                 <input required type="number" min={2} ref={timePerTurnRef}></input>
+            </div>
+            <div className={styles.input}>
+                <label>Team switches each round
+                <span className={styles.inputSubtitle}>
+                    Leaving this unchecked will roll over the team that finished the last round to the next round with their remaining time.
+                </span>
+                </label>
+                <input type="checkbox" ref={switchTeamsAfterRoundRef}></input>
             </div>
             <button>Ready</button>
     </form>

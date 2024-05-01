@@ -68,6 +68,11 @@ input, textarea {
     justify-content: space-between;
 }
 
+.inputSubtitle {
+    display: block;
+    font-size: 12px;
+}
+
 .input input {
     width: 100px;
 }

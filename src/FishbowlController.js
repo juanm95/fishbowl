@@ -1,3 +1,4 @@
+import { loadState, saveState } from "./FishbowlData";
 import { shuffleArray } from "./Utilities";
 
 export const Stages = {
@@ -10,11 +11,30 @@ export const Stages = {
 
 export class FishbowlController {
     constructor() {
-        this.resetGame();
+        const storedState = loadState();
+        if (storedState) {
+            Object.entries(storedState).forEach(([key, value]) => {
+                this[key] = value;
+            });
+            if (this.stage === Stages.Play) {
+                this.stage = Stages.Ready;
+            }
+        } else {
+            this.resetGame();
+        }
     }
 
     backupState() {
-
+        const state = {
+            stage: this.stage,
+            teams: this.teams,
+            totalCards: this.totalCards,
+            cards: this.cards,
+            timePerTurn: this.timePerTurn,
+            roundInfo: this.roundInfo,
+            totalRounds: this.totalRounds
+        }
+        saveState(state);
     }
 
     resetGame() {
@@ -23,8 +43,10 @@ export class FishbowlController {
         this.totalCards = null
         this.cards = [];
         this.timePerTurn = null;
+        this.switchTeamsAfterRound = false;
         this.roundInfo = null;
         this.totalRounds = 3;
+        this.backupState();
     }
 
     setRules(rules) {
@@ -37,6 +59,7 @@ export class FishbowlController {
         this.totalCards = rules.totalCards;
         this.timePerTurn = rules.timePerTurn;
         this.stage = Stages.AddCards
+        this.switchTeamsAfterRound = rules.switchTeamsAfterRound;
     }
 
     getCurrentCard() {
@@ -45,10 +68,13 @@ export class FishbowlController {
 
     addCard(card) {
         this.cards.push(card);
+        this.backupState();
     }
 
     removeLastCard() {
-        return this.cards.pop();
+        const poppedCard = this.cards.pop();
+        this.backupState();
+        return poppedCard;
     }
 
     removeCardByName(cardName) {
@@ -66,6 +92,7 @@ export class FishbowlController {
         }
 
         this.cards.splice(cardIndex, 1);
+        this.backupState();
         return true;
     }
 
@@ -90,6 +117,7 @@ export class FishbowlController {
             completedCards: {},
             cardsLeft: this.totalCards,
         };
+        this.backupState();
     }
 
     startPlaying() {
@@ -103,12 +131,14 @@ export class FishbowlController {
         this.roundInfo.cards = this.getCardOrder();
         this.roundInfo.lastAction = null;
         this.setNextCardIndex();
+        this.backupState();
     }
 
     finishRound() {
         this.roundInfo.roundNumber++;
         if (this.roundInfo.roundNumber === this.totalRounds) {
             this.stage = Stages.Done;
+            this.backupState();
             return;
         }
 
@@ -116,7 +146,12 @@ export class FishbowlController {
         this.roundInfo.cards = this.getCardOrder();
         this.roundInfo.completedCards = {};
         this.roundInfo.cardsLeft = this.totalCards;
-        this.setNextCardIndex();
+        if (this.switchTeamsAfterRound) {
+            this.changeToNextTeam();
+        } else {
+            this.setNextCardIndex();
+            this.backupState();
+        }
     }
 
     setNextCardIndex() {
@@ -130,6 +165,8 @@ export class FishbowlController {
         this.roundInfo.time--;
         if (this.roundInfo.time === 0) {
             this.changeToNextTeam();
+        } else if (this.roundInfo.time % 5 === 0) {
+            this.backupState();
         }
     }
 
@@ -145,6 +182,7 @@ export class FishbowlController {
             this.finishRound();
         } else {
             this.setNextCardIndex();
+            this.backupState();
         }
     }
 
@@ -162,6 +200,7 @@ export class FishbowlController {
             this.roundInfo.cardsLeft++;
             this.roundInfo.completedCards[this.roundInfo.cards[this.roundInfo.cardIndex]] = false;
             this.teams[this.roundInfo.currentTeam].points--;
+            this.backupState();
         }
         this.roundInfo.lastAction = null;
     }
@@ -172,5 +211,6 @@ export class FishbowlController {
         this.teams.forEach((team) => {
             team.points = 0;
         });
+        this.backupState();
     }
 }
